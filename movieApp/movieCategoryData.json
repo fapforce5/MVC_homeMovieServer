@@ -1,0 +1,60 @@
+{
+  "movieCategoryModel": [
+    {
+      "id": 0,
+      "category": "sdfs",
+      "active": true,
+      "hidden": false,
+      "added": "2024-09-22T18:33:57.0864046-07:00",
+      "addedBy": "UNK"
+    },
+    {
+      "id": 1,
+      "category": "fdgsfg",
+      "active": false,
+      "hidden": false,
+      "added": "2024-09-21T18:47:43.5266316-07:00",
+      "addedBy": "UNK"
+    },
+    {
+      "id": 2,
+      "category": "try",
+      "active": false,
+      "hidden": false,
+      "added": "2024-09-21T18:51:16.5464875-07:00",
+      "addedBy": "UNK"
+    },
+    {
+      "id": 3,
+      "category": "sdfs",
+      "active": false,
+      "hidden": false,
+      "added": "2024-09-21T18:51:41.3560285-07:00",
+      "addedBy": "UNK"
+    },
+    {
+      "id": 5,
+      "category": "Comedy",
+      "active": true,
+      "hidden": false,
+      "added": "2024-09-21T18:53:38.7702713-07:00",
+      "addedBy": "UNK"
+    },
+    {
+      "id": 5,
+      "category": "comedy",
+      "active": false,
+      "hidden": false,
+      "added": "2024-09-21T18:53:38.7702713-07:00",
+      "addedBy": "UNK"
+    },
+    {
+      "id": 6,
+      "category": "asdfasd",
+      "active": true,
+      "hidden": false,
+      "added": "2024-09-21T19:47:48.7261612-07:00",
+      "addedBy": "UNK"
+    }
+  ]
+}

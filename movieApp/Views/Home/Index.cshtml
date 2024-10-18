@@ -1,0 +1,56 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+<script type="text/javascript">
+    var homeIndex = {};
+    $(document).ready(function () {
+        homeIndex.getNewestMovies();
+    });
+
+    homeIndex.getNewestMovies = function () {
+        var howMany = 10;
+        $.ajax({
+            url: "/home/GetNewestMovies",
+            type: "GET",
+            data: { howMany: howMany },
+            dataType: "json",
+            success: function (d) {
+                homeIndex.buildMovieList(d);
+            },
+            error: function(ex) {
+                console.log(ex);
+            }
+        });
+
+    };
+
+    homeIndex.buildMovieList = function (movieList) {
+        $("#homeIndex_MovieList").html("");
+        $.each(movieList, function (i, v) {
+            $("#homeIndex_MovieList").append('<div class="movie-icon">' +
+                '<a href="/play?id=' + v.id + '">' + 
+                '<img src="' + v.thumbnail + '"/>' +
+                '<div class="inline-block w-100 text-center movie-title">' + v.movieName + '</span>' +
+                '</a>' +
+                '</div>');
+        });
+    };
+</script>
+
+<div class="row" id="homeIndex_MovieList">
+    <h2>Loading List....</h2>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+

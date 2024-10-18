@@ -1,0 +1,53 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+
+    <link rel="stylesheet" href="~/css/bootstrap.css">
+    <link rel="stylesheet" href="~/css/site.css" />
+
+    <script type="text/javascript" src="~/js/jquery-3.7.1.min.js"></script>
+    <script type="text/javascript" src="~/js/jquery-ui.min.js"></script>
+    <script src="~/js/bootstrap.js"></script>
+    <script src="~/js/site.js"></script>
+</head>
+<body>
+    <nav class="site-nav">
+        <a href="/">Home</a>
+        <a href="/media/edit" class="float-left ml-4">Manage</a>
+
+        <button type="button" onclick="site.GetAllUsers()" class="site-user">
+            <img src="~/images/userIcons/-1.jpg" id="site_user_icon" />
+            <span id="site_user_name">Log In</span>
+        </button>
+        <button type="button" class="site-search">🔎︎</button>
+    </nav>
+    <div class="site-body">
+        <div>
+            <div class="left-menu">
+                <h3>Movies</h3>
+                <a href="/media/edit">Manage Movies</a>
+                <a href="/media/upload">Upload Movie</a>
+                <a href="/media/manage">Manage Categories</a>
+                <a href="/media/manage">Manage Series</a>
+                <h3>Users</h3>
+                <a href="/user">Manage Users</a>
+            </div>
+            <div class="right-area">@RenderBody()</div>
+
+        </div>
+        
+    </div>
+
+    <div class="full-screen-popup" id="site_login_wrapper" style="display:none;">
+        <div class="center-big-text-outer" id="user_step1">
+            <div class="center-big-text">
+                <div id="site_login" class="center-big-text-error">&nbsp;</div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

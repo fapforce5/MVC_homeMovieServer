@@ -1,0 +1,59 @@
+﻿@{
+    ViewData["Title"] = "Upload";
+}
+
+<script type="text/javascript">
+    var manage = {};
+    $(document).ready(function () {
+        $("#manage_search").on("change keyup", function () {
+            manage.textSearch();      
+        });
+    });
+
+    manage.textSearch = function () {
+        var search = $("#manage_search").val();
+        $.ajax({
+            url: "/media/GetMovieByTitle",
+            type: "GET",
+            data: { search: search, howMany: 20 },
+            dataType: "json",
+            success: function (d) {
+                manage.fillSearchArea(d);
+            },
+            error: function (ex) {
+                console.log(ex);
+            }
+        });
+        
+    };
+
+    manage.fillSearchArea = function (d) {
+        $("#manage_list").html("");
+        $.each(d, function (i, v) {
+            $("#manage_list").append('<div class="movie-icon">' +
+                '<button type="button" onclick="manage.selectmovie(' + v.id + ');">' +
+                '<img src="' + v.thumbnail + '"/>' +
+                '<div class="inline-block w-100 text-center movie-title">' + v.movieName + '</span>' +
+                '</button>' +
+                '</div>');
+        });
+    };
+
+    manage.selectmovie = function (movieId) {
+        $("#manage_list").slideUp("fast", function () {
+
+        });
+    };
+</script>
+
+<div>
+    <div class="input-group mb-3">
+        <input type="text" class="form-control" placeholder="Movie Title" id="manage_search">
+        <div class="input-group-append">
+            <button class="btn btn-outline-secondary" type="button" onclick="manage.textSearch()">Search</button>
+        </div>
+    </div>
+    <div id="manage_list">
+
+    </div>
+</div>

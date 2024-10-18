@@ -1,0 +1,113 @@
+﻿@{
+    ViewData["Title"] = "Play";
+}
+<script type="text/javascript">
+
+    var userData = {};
+    userData.name = "";
+
+
+    $(document).ready(function () {
+        userData.getAllUserIcons();
+    });
+
+    userData.getAllUserIcons = function () {
+        $.ajax({
+            url: "/User/GetAllUserIcons",
+            type: "GET",
+            dataType: "json",
+            success: function (d) {
+                userData.buildIcons(d);
+            },
+            error: function (ex) {
+                console.log(ex);
+            }
+        });
+    }
+
+    userData.buildIcons = function (d) {
+        $("#user_icon").html("");
+        $.each(d, function (i, v) {
+            $("#user_icon").append('<button type="button" class="user-icon user_iconSelect mb-3 ml-3" onclick="userData.selectIcon(' + v.id + ')">' +
+                '<img src="images/userIcons/' + v.filename + '"/>' +
+                '</button>');
+        });
+    };
+
+    userData.setName = function () {
+        $("#user_error").text("");
+        var tempName = $("#user_name").val().trim();
+        userData.name = tempName.replace(/[\W_]+/g, ' ');
+        console.log(userData);
+        if (tempName != userData.name) {
+            $("#user_error").text("Only letters and numbers allowed for user name. ");
+        }
+        else if (userData.name.length < 1) {
+            $("#user_error").text("Username is blank. Please enter a letter or number. ");
+        }
+        else {
+            $("#user_saving").hide();
+            $("#user_icon").show();
+            $("#user_step1").slideUp("fast", function () {
+                $("#user_step2").slideDown("fast");
+            });
+        }
+    };
+
+    userData.selectIcon = function (iconId) {
+        $("#user_saving").show();
+        $("#user_icon").hide();
+        userData.save(userData.name, iconId);
+    }
+
+    userData.save = function (userName, userIconId) {
+        $.ajax({
+            url: "/User/AddUser",
+            type: "POST",
+            data: { userName: userName, userIconId: userIconId},
+            dataType: "json",
+            success: function (d) {
+                if (d !== null) {
+                    $("#user_step2").hide();
+                    $("#user_step3").show();
+                    
+                    $("#user_switch").html('<button type="button" class="user-icon user_iconSelect mb-3 ml-3" onclick="site.switchUser(' + d.user.id + ', \'/\')">' +
+                        '<img src="images/userIcons/' + d.userIcon.filename + '"/>' +
+                        '<div>' + d.user.username + "</div>" +
+                        '</button>')
+                }
+                else {
+                    $("#user_error").text("Server error. Unable to add new user. ");
+                }
+            },
+            error: function (ex) {
+                console.log(ex);
+            }
+
+        });
+    };
+
+    userData.home = function () {
+        window.location.replace("/");
+    }
+
+    //site.switchUser(d.id, "userDate.switchuser");
+</script>
+<div class="center-big-text-outer" id="user_step1">
+    <div class="center-big-text">
+        <div id="user_error" class="center-big-text-error">&nbsp;</div>
+        <label>New user name</label>
+        <input type="text" id="user_name" placeholder="Your Name">
+        <button type="button" class="btn btn-success center-big-text-full-button" onclick="userData.setName()">Save</button>
+    </div>
+</div>
+<div id="user_step2" class="p-5" style="display:none;">
+    <label class="big-label">Select your icon</label>
+    <div id="user_saving" class="big-label" style="display:none;">Saving...</div>
+    <div id="user_icon" class="big-margin"></div>
+</div>
+<div id="user_step3" class="p-5" style="display:none">
+    <label class="big-label">User added!</label>
+    <div class="big-label">Switch to user? </div>
+    <div id="user_switch" class="big-margin"></div>
+</div>

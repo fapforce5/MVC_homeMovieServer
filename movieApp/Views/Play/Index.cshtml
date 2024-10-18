@@ -1,0 +1,44 @@
+﻿@{
+    ViewData["Title"] = "Play";
+}
+
+<script type="text/javascript">
+    var play = {};
+    const urlParams = new URLSearchParams(window.location.search);
+    play.id = urlParams.get('id');
+    $(document).ready(function () {
+        play.getMovie(play.id);
+    });
+
+    play.getMovie = function (id) {
+        $.ajax({
+            url: "/home/GetMovieById",
+            type: "GET",
+            data: { id: id },
+            dataType: "json",
+            success: function (d) {
+                play.playMovie(d);
+            },
+            error: function (ex) {
+                console.log(ex);
+            }
+        });
+    }
+
+    play.playMovie = function (movieData) {
+        $("#play_title").text(movieData.movieName);
+        $("#play_movie").html('<video class="movie-screen" controls>' +
+            '<source src="' + movieData.fileName + '" type="video/mp4">' +
+            '</video>');
+        $("#play_edit").attr("href", "/Media/Edit?id=" + movieData.id);
+    }
+
+</script>
+
+<div class="row">
+    <div class="col-12 movie-screen" id="play_movie"></div>
+    <div class="col-12">
+        <span id="play_title" class="movie-title"></span>
+        <a href="#" class="btn btn-primary btn-outline-primary float-right" id="play_edit">Edit</a>
+    </div>
+</div>

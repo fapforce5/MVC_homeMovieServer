@@ -1,0 +1,236 @@
+﻿@{
+    ViewData["Title"] = "Category";
+}
+
+<script type="text/javascript">
+
+    var category = {};
+    category.activeId = -1;
+    $(document).ready(function () {
+        category.GetMovieCategoriesAll();
+
+        $("#category_new").focus(function () {
+            $("#category_new_error").html("&nbsp;");
+        });
+
+        $("#category_list").on("click", ".category-select", function () {
+            var categoryId = parseInt($(this).data("id"));
+            category.popupedit(categoryId);
+        });
+    });
+
+    category.GetMovieCategoriesAll = function (highlight = null) {
+        $.ajax({
+            url: "/home/GetMovieCategoriesAll",
+            type: "GET",
+            success: function (d) {
+                category.buildCategories(d, highlight);
+            },
+            error: function (ex) {
+                console.log(ex);
+            }
+
+        });
+    };
+
+    category.buildCategories = function (movieCategories, highlight) {
+        $("#category_list").html("");
+        var highlightId = -1;
+        $.each(movieCategories, function (i, v) {
+            if (v.category.toLowerCase() === highlight)
+                highlightId = v.id;
+            $("#category_list").append('<button type="button" data-id="' + v.id + '" class="btn ml-2 mb-2 btn-default category-select">' +
+                v.category +
+                "</button>")
+        });
+        if (highlightId > -1)
+            $(".category-select[data-id='" + highlightId + "']").addClass("movie-highlight-blue");
+    }
+
+    category.addNew = function () {
+        $("#category_new_error").html("&nbsp;");
+        var newCategory = $("#category_new").val().trim();
+        if (newCategory.length < 2)
+            $("#category_new_error").text("Category is blank. Please enter some text.");
+        else {
+            $.ajax({
+                url: "/home/AddMovieCategory",
+                type: "POST",
+                data: { category: newCategory },
+                dataType: "json",
+                success: function (d) {
+                    if (d.success) {
+                        $("#category_new").val("");
+                        category.GetMovieCategoriesAll(newCategory);
+                    }
+                    else {
+                        $("#category_new_error").html("Category NOT saved. Check the name and try again. ");
+                    }
+                },
+                error: function (ex) {
+                    console.log(ex);
+                }
+            });
+        }
+    }
+
+    category.popupedit = function (categoryId) {
+        category.activeId = -1;
+        category.activeName = "";
+
+        $.ajax({
+            url: "/home/GetMovieCategoryById",
+            type: "GET",
+            data: { id: categoryId },
+            dataType: "json",
+            success: function (d) {
+                if (d === null)
+                    alert("bad");
+                else {
+                    category.activeId = d.id;
+                    category.activeName = d.category;
+
+                    $("#category_edit_title").text("Edit: " + d.category);
+                    $("#category_edit_category").val(d.category);
+                    $("#category_edit_addedby").text(d.addedBy);
+                    $("#category_edit_added").text(d.added.substring(0, 10));
+                    $("#category_edit_defaultfooter").show();
+                    $("#category_edit_deleteFooter").hide();
+                    $("#category_edit_error").html("&nbsp;");
+                    $("#category_edit").modal("show");
+                }
+            },
+            error: function (ex) {
+                console.log(ex);
+            }
+
+        });
+    };
+
+    category.confirmDelete = function () {
+        $("#category_edit_defaultfooter").slideUp("fast", function () {
+            $("#category_edit_deleteFooter").slideDown();
+        });
+        
+    };
+
+    category.confirmDeleteCancel = function () {
+        $("#category_edit_deleteFooter").slideUp("fast", function () {
+            $("#category_edit_defaultfooter").slideDown();
+        });
+    };
+
+    category.deleteconfirm = function () {
+        $("#category_edit").modal("hide");
+        $.ajax({
+            url: "/home/DeleteMovieCategory",
+            type: "DELETE",
+            data: { id: category.activeId },
+            dataType: "json",
+            success: function (d) {
+                if (d.success) {
+                    category.GetMovieCategoriesAll();
+                }
+                else {
+                    $("#category_edit_error").html("Category NOT deleted. Reload and try again. ");
+                }
+            },
+            error: function (ex) {
+                console.log(ex);
+            }
+        });
+    };
+
+    category.update = function () {
+
+        var newCategoryName = $("#category_edit_category").val().trim();
+        if (newCategoryName.length < 0) {
+            $("#category_edit_error").html("Add some text.");
+        }
+        else if (newCategoryName === category.activeName) {
+            $("#category_edit_error").html("No change detected. ");
+        }
+        else {
+            $("#category_edit_error").html("Saving...");
+            $.ajax({
+                url: "/home/UpdateMovieCategory",
+                type: "POST",
+                data: { id: category.activeId, category: newCategoryName },
+                dataType: "json",
+                success: function (d) {
+                    if (d.success) {
+                        $("#category_edit").modal("hide");
+                        category.GetMovieCategoriesAll(newCategoryName);
+                    }
+                    else {
+                        $("#category_edit_error").html("Category NOT saved. ");
+                    }
+                },
+                error: function (ex) {
+                    console.log(ex);
+                }
+            });
+        }
+    };
+</script>
+
+<div class="row">
+    <div class="col-4">
+
+    </div>
+    <div class="col-8">
+        <h4>New Category</h4>
+        <div id="category_new_error" class="text-danger">&nbsp;</div>
+        <div class="input-group mb-3">
+            <div class="input-group-prepend">
+                <span class="input-group-text">Category</span>
+            </div>
+            <input type="text" class="form-control" id="category_new" placeholder="Comedy">
+            <div class="input-group-append">
+                <button class="btn btn-outline-success" type="button" onclick="category.addNew()">Add Category</button>
+            </div>
+        </div>
+
+        <h2>Categories</h2>
+        <div id="category_list"></div>
+    </div>
+</div>
+
+<div class="modal fade" id="category_edit" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="category_edit_title">Edit</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="category_edit_error" class="text-danger">&nbsp;</div>
+                <div class="input-group mb-3">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text">Category</span>
+                    </div>
+                    <input type="text" class="form-control" id="category_edit_category" placeholder="Comedy">
+                </div>
+                <div>
+                    <span class="font-weight-bold">Added By:</span> <span id="category_edit_addedby"></span>
+                </div>
+                <div>
+                    <span class="font-weight-bold">Added On:</span> <span id="category_edit_added"></span>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <div id="category_edit_defaultfooter">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger" onclick="category.confirmDelete()">Delete</button>
+                    <button type="button" class="btn btn-primary" onclick="category.update()">Save changes</button>
+                </div>
+                <div id="category_edit_deleteFooter" style="display:none;">
+                    <button type="button" class="btn btn-secondary" onclick="category.confirmDeleteCancel()">Cancel</button>
+                    <button type="button" class="btn btn-danger" onclick="category.deleteconfirm()">Yes, I'm sure I want to delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

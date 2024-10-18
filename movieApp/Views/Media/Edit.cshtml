@@ -1,0 +1,196 @@
+﻿@{
+    ViewData["Title"] = "Edit";
+
+}
+
+<script type="text/javascript">
+    var editm = {};
+    const urlParams = new URLSearchParams(window.location.search);
+    const myParam = urlParams.get('id');
+    editm.id = -1;
+
+    $(document).ready(function () {
+        let i;
+        for (i = 0; i < 21; i++) {
+            $("#edit_duration_hour").append('<option value="' + i + '">' + site.padZero(i) + '</option>');
+        }
+        for (i = 0; i < 60; i++) {
+            $("#edit_duration_minute").append('<option value="' + i + '">' + site.padZero(i) + '</option>');
+        }
+        if (myParam !== null) {
+            editm.getMovie(myParam);
+            $("#edit_editArea").show();
+            $("#manage_list").hide();
+        }
+        else {
+            $("#edit_editArea").hide();
+            $("#manage_list").show();
+        }
+        $("#edit_search").on("change keyup", function () {
+            editm.textSearch();
+        });
+    });
+
+    editm.getMovie = function (id) {
+
+        $.ajax({
+            url: "/home/GetMovieById",
+            type: "GET",
+            data: { id: id },
+            dataType: "json",
+            success: function (d) {
+                editm.fillMoveData(d);
+            },
+            error: function (ex) {
+                console.log(ex);
+            }
+        });
+    }
+
+    editm.fillMoveData = function (movieData) {
+        editm.id = movieData.id;
+
+        $("#edit_thumbnail").attr("src", movieData.thumbnail);
+        $("#edit_movie").html('<video width="320" height="240" controls>' +
+            '<source src="' + movieData.fileName + '" type="video/mp4">' +
+            '</video>');
+        $("#edit_title").val(movieData.movieName);
+        $("#edit_description").val(movieData.movieDesc);
+        $("#edit_rating").val(movieData.rating);
+        $("#edit_added").val(movieData.added.substring(0, 10));
+        $("#edit_addedBy").val(movieData.addedBy);
+        $("#edit_watch").attr("href", "/play?id=" + movieData.id);
+        var duration = movieData.duration.split(":");
+        var hour = parseInt(duration[0]);
+        var minute = parseInt(duration[1]);
+        if (hour > 20)
+            hour = 20;
+        $("#edit_duration_hour").val(hour);
+        $("#edit_duration_minute").val(minute);
+    };
+
+    editm.save = function () {
+        $("#edit_message").text("Saving").removeClass("text-success").removeClass("text-danger");
+        var postData = {
+            id: editm.id,
+            movieName: $("#edit_title").val(),
+            movieDesc: $("#edit_description").val(),
+            rating: $("#edit_rating").val()
+        };
+        $.ajax({
+            url: "/home/UpdateMovie",
+            type: "POST",
+            data: postData,
+            dataType: "json",
+            success: function (d) {
+                if (d.success) {
+                    $("#edit_message").text("Saved").addClass("text-success");
+                }
+                else {
+                    $("#edit_message").text("Not saved. Server error occured. ").addClass("text-danger");
+                }
+            },
+            error: function (ex) {
+                console.log(ex);
+            }
+        });
+    };
+
+    editm.textSearch = function () {
+        if ($("#edit_editArea").is(":visible")) {
+            $("#edit_editArea").slideUp("fast", function () {
+                $("#manage_list").slideDown("fast");
+            });
+        }
+        var search = $("#edit_search").val();
+        if (search.length > 0) {
+            $.ajax({
+                url: "/media/GetMovieByTitle",
+                type: "GET",
+                data: { search: search, howMany: 20 },
+                dataType: "json",
+                success: function (d) {
+                    editm.fillSearchArea(d);
+                },
+                error: function (ex) {
+                    console.log(ex);
+                }
+            });
+        }
+    };
+
+    editm.fillSearchArea = function (d) {
+        $("#manage_list").html("");
+        $.each(d, function (i, v) {
+            $("#manage_list").append('<div class="movie-icon">' +
+                '<button type="button" onclick="editm.selectmovie(' + v.id + ');">' +
+                '<img src="' + v.thumbnail + '"/>' +
+                '<div class="inline-block w-100 text-center movie-title">' + v.movieName + '</span>' +
+                '</button>' +
+                '</div>');
+        });
+    };
+    editm.selectmovie = function (movieId) {
+        editm.getMovie(movieId);
+        $("#edit_search").val("");
+        $("#manage_list").slideUp("fast", function () {
+            $("#edit_editArea").slideDown("fast");
+            $("#manage_list").html("");
+        });
+
+    }
+</script>
+
+<div class="input-group mb-3">
+    <input type="text" class="form-control" placeholder="Movie Title" id="edit_search">
+    <div class="input-group-append">
+        <button class="btn btn-outline-secondary" type="button" onclick="editm.textSearch()">Search</button>
+    </div>
+</div>
+<div id="manage_list">
+
+</div>
+
+<div id="edit_editArea">
+    <div>
+        <div style="display:inline-block; margin-right:50px; vertical-align:top">
+            <img src="/images/image-placeholder-500x500.jpg" class="w-100" id="edit_thumbnail" />
+        </div>
+        <div id="edit_movie" style="display:inline-block; vertical-align:top;">
+
+        </div>
+    </div>
+
+    <div id="edit_message">&nbsp;</div>
+    <label for="edit_title">Movie Title</label>
+    <input type="text" placeholder="Movie Title" class="form-control mb-4" id="edit_title" />
+    <label for="edit_description">Movie Description</label>
+    <input type="text" placeholder="Movie Description" class="form-control mb-4" id="edit_description" />
+    <label for="edit_rating">Rating</label>
+    <select class="form-control mb-4" id="edit_rating">
+        <option value="G">G</option>
+        <option value="PG-13">PG-13</option>
+        <option value="R">R</option>
+        <option value="MA+">MA+</option>
+        <option value="UR">Unrated</option>
+    </select>
+    <label for="edit_description">Run Time</label>
+    <select class="mb-4" id="edit_duration_hour"></select>
+    <span style="color:#f0f0f0">:</span>
+    <select class="mb-4" id="edit_duration_minute"></select>
+
+    <div class="row">
+        <div class="col-6">
+            Uploaded: <span id="edit_added"></span>
+        </div>
+        <div class="col-6">
+            By: <span id="edit_addedBy"></span>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <button class="btn btn-success float-right" onclick="editm.save()">Save</button>
+            <a href="#" class="btn btn-primary btn-outline-primary float-right mr-4" id="edit_watch">Watch Movie</a>
+        </div>
+    </div>
+</div>

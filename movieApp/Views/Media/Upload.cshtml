@@ -1,0 +1,91 @@
+﻿@{
+    ViewData["Title"] = "Upload";
+}
+<style>
+    #media_upload {
+        border: 2px dotted #0B85A1;
+        width: 100%;
+        color: #92AAB0;
+        text-align: left;
+        vertical-align: middle;
+        padding: 10px 10px 10px 10px;
+        margin-bottom: 10px;
+        font-size: 1.25rem;
+    }
+
+    .dragover {
+        border: 2px dotted #5ec3db;
+    }
+</style>
+<h1>hellow</h1>
+<input type="file" id="media_upload" name="filename">
+<script type="text/javascript">
+    var dMedia = {};
+
+    $(document).ready(function () {
+        $('#media_upload').on('dragover', function (e) {
+            e.preventDefault();
+            $(this).addClass('dragover');
+        });
+
+        $('#media_upload').on('dragleave', function (e) {
+            e.preventDefault();
+            $(this).removeClass('dragover');
+        });
+
+        $('#media_upload').change(function (e) {
+            dMedia.uploadFile()
+        });
+
+        $('#media_upload').on('drop', function (e) {
+            e.preventDefault();
+            dMedia.uploadFile();
+        });
+
+        $('#file-input').submit(function (e) {
+            e.preventDefault();
+            var formData = new FormData(this);
+            dMedia.uploadFile(formData);
+            //var files = this.files;
+            // Handle file selection here
+        });
+
+        dMedia.uploadFile = function () {
+            //event.preventDefault();
+            var files = $("#media_upload")[0].files;
+            var formData = new FormData();
+            formData.append("rawUpload", files[0]);
+            console.log(files); // I just check here and in browser I can see file name and size
+            console.log(formData); // I expect to see the
+            $.ajax({
+                type: "POST",
+                url: "Media/UploadRawMovie",
+                data: formData, // In the controller it receives IFormFile image
+                processData: false,
+                contentType: false,
+                success: function (d) {
+                    if (d !== null)
+                        window.location.replace("/Media/Edit?id=" + d.id);
+                },
+                error: function (errorMessage) {
+                    console.log(errorMessage);
+                }
+            });
+
+            //$.ajax({
+            //    url: 'Media/UploadRawMovie', // Replace with your upload endpoint
+            //    type: 'POST',
+            //    data: tFile,
+            //    processData: false, // Don't process data
+            //    contentType: false, // Don't set content type
+            //    success: function (response) {
+            //        console.log(response);
+            //    },
+            //    error: function (error) {
+            //        console.error(error);
+
+            //    }
+            //});
+        };
+    });
+</script>
